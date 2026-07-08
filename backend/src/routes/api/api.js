@@ -5,8 +5,43 @@ const { authorize } = require('./../../middleware/auth/auth.js')
 const { Users } = require("./../../schemas/users.js")
 const { passRecords } = require("./../../schemas/pass_records.js")
 const crypto = require('crypto')
-const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+
+const ENCRYPTION_SALT = 'vault_master_salt_v1'; 
+
+const encryptPassword = (plainPassword, secretKey) => {
+
+    const derivedKey = crypto.scryptSync(secretKey, ENCRYPTION_SALT, 32);
+    const iv = crypto.randomBytes(12);
+    
+    const cipher = crypto.createCipheriv('aes-256-gcm', derivedKey, iv);
+    
+    let encrypted = cipher.update(plainPassword, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    const authTag = cipher.getAuthTag().toString('hex');
+    
+    return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+};
+
+const decryptPassword = (encryptedString, secretKey) => {
+    const derivedKey = crypto.scryptSync(secretKey, ENCRYPTION_SALT, 32);
+    
+    const parts = encryptedString.split(':');
+    if (parts.length !== 3) throw new Error("Invalid encrypted payload format");
+    
+    const iv = Buffer.from(parts[0], 'hex');
+    const authTag = Buffer.from(parts[1], 'hex');
+    const encryptedText = parts[2];
+    
+    const decipher = crypto.createDecipheriv('aes-256-gcm', derivedKey, iv);
+    decipher.setAuthTag(authTag); 
+    
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+}
 
 apiRouter.use('/auth', authRouter)
 
@@ -97,14 +132,11 @@ apiRouter.post('/getlist', authorize, async (req, res) => {
 })
 
 apiRouter.post('/additem', authorize, async (req, res) => {
-    // We assume `item` coming from the frontend looks like: 
-    // { title: "...", email: "...", password: "...", score: 85 }
     const { item, key, token, token_type } = req.body
 
     try {
         let targetUsername;
 
-        // 1. Resolve the user
         if (token_type === 'regular') {
             const user = await Users.findOne({ token: token })
             if (!user) return res.status(404).json({ success: false, message: "User not found" })
@@ -121,24 +153,19 @@ apiRouter.post('/additem', authorize, async (req, res) => {
             targetUsername = profile_data.login
         }
 
-        // 2. Encrypt the password using JWT and the provided key
-        const encryptedPassword = jwt.sign({ password: item.password }, key)
+        const encryptedPassword = encryptPassword(item.password, key)
 
-        // 3. Generate automatic timestamps
         const currentTimestamp = new Date().toISOString()
 
-        // 4. Construct the schema object
         const newRecordData = {
             title: item.title,
             email: item.email,
             password_hash: encryptedPassword,
             data_created: currentTimestamp,
             data_modified: currentTimestamp,
-            // Grab the score directly from the passed item
             score: item.score || 0
         }
 
-        // 5. Atomic database push
         const updatedRecord = await passRecords.findOneAndUpdate(
             { username: targetUsername },
             { $push: { records: newRecordData } },
@@ -208,11 +235,11 @@ apiRouter.post('/decrypt-key', authorize, async (req, res) => {
                 return res.status(400).json({ success: false, message: "Missing required fields" })
             }
 
-            const decoded = jwt.verify(password_hash, key)
+            const plainPassword = decryptPassword(password_hash, key)
 
             return res.status(200).json({
                 success: true,
-                password: decoded.password
+                password: plainPassword
             })
         }
     } catch (error) {
@@ -227,7 +254,6 @@ apiRouter.post('/update-item', authorize, async (req, res) => {
     try {
         let targetUsername;
 
-        // 1. Resolve the user
         if (token_type === 'regular') {
             const user = await Users.findOne({ token: token });
             if (!user) return res.status(404).json({ success: false, message: "User not found" });
@@ -244,11 +270,10 @@ apiRouter.post('/update-item', authorize, async (req, res) => {
             targetUsername = profile_data.login;
         }
 
-        // 2. Encrypt the updated password using JWT and the provided key
-        const encryptedPassword = jwt.sign({ password: item.password }, key);
+        const encryptedPassword = encryptPassword(item.password, key);
+        
         const currentTimestamp = new Date().toISOString();
 
-        // 3. Atomic database update for specific subdocument (requires item._id)
         const updatedRecord = await passRecords.findOneAndUpdate(
             { username: targetUsername, "records._id": item._id },
             {
@@ -281,7 +306,6 @@ apiRouter.post('/deleteItem', authorize, async (req, res) => {
     try {
         let targetUsername;
 
-        // 1. Resolve the user
         if (token_type === 'regular') {
             const user = await Users.findOne({ token: token });
             if (!user) return res.status(404).json({ success: false, message: "User not found" });
@@ -298,7 +322,6 @@ apiRouter.post('/deleteItem', authorize, async (req, res) => {
             targetUsername = profile_data.login;
         }
 
-        // 2. Atomic database pull (removes the item from the records array by _id)
         const updatedRecord = await passRecords.findOneAndUpdate(
             { username: targetUsername },
             { $pull: { records: { _id: item._id } } },

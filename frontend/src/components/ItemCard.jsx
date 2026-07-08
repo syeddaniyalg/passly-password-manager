@@ -11,7 +11,7 @@ export const ItemCard = ({
     onEdit, 
     onView, 
     onCopy,
-    onDelete // Added onDelete prop
+    onDelete 
 }) => {
     return (
         <div className='w-full bg-[rgb(28,31,34)] min-h-10 flex lg:grid-cols-5 lg:grid lg:place-items-center lg:place-content-center flex-col gap-2 lg:items-center justify-between p-5 lg:pt-0 lg:pb-0 pl-3 pr-3 text-white rounded-xl border border-transparent hover:border-[rgb(78,83,87)] transition-colors'>
@@ -29,7 +29,6 @@ export const ItemCard = ({
                     value={passwordHash}
                 />
                 
-                {/* Wrapped in a button to handle onClick properly */}
                 <button 
                     type="button" 
                     onClick={onView} 
@@ -63,7 +62,7 @@ export const ItemCard = ({
                 </button>
                 <button 
                     type="button" 
-                    onClick={onDelete} // Attached onDelete handler
+                    onClick={onDelete} 
                     className="cursor-pointer text-[rgb(144,154,163)] hover:text-red-500 transition-colors"
                     title="Delete Item"
                 >

@@ -190,7 +190,7 @@ export const Dashboard = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ password_hash: item.password_hash })
+                body: JSON.stringify({ password_hash: item.password_hash, key: currentKey })
             })
 
             const data = await res.json()
@@ -270,6 +270,12 @@ export const Dashboard = () => {
         }
     }
 
+    const handlePasswordChange = (e) => {
+        const val = e.target.value
+        setFormData({ ...formData, password: val })
+        setPasswordScore(calculatePasswordScore(val))
+    }
+
     const handleSaveLogin = async () => {
         setFormError('')
         
@@ -293,7 +299,7 @@ export const Dashboard = () => {
                     password: formData.password,
                     score: passwordScore
                 },
-                key: key, 
+                key: key
             }
 
             const res = await fetch(`${SERVER_URL}${endpoint}`, {
@@ -396,7 +402,7 @@ export const Dashboard = () => {
                         autoCorrect="off"
                         spellCheck="false"
                         data-lpignore="true"
-                        data-1p-ignore
+                        data-1p-ignore="true"
                         className='w-full bg-[rgb(28,31,34)] p-1 pl-3 text-yellow-300 placeholder:text-[rgb(144,154,163)] outline-1 outline-[rgb(78,83,87)] rounded-xl' 
                     />
 
@@ -453,7 +459,6 @@ export const Dashboard = () => {
                 </div>
             </div>
 
-            {/* MAIN MODAL OVERLAY */}
             {phase !== 'static' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
                     <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[rgb(28,31,34)] rounded-xl border border-[rgb(78,83,87)] shadow-2xl p-6 md:p-8">
@@ -476,7 +481,6 @@ export const Dashboard = () => {
                             </svg>
                         </button>
 
-                        {/* KEY DIALOG STATE */}
                         {phase === 'key' && (
                             <form onSubmit={(e) => { e.preventDefault(); handleUnlock(); }} className="mt-2" autoComplete="off">
                                 <h2 className="text-yellow-300 text-2xl md:text-3xl font-semibold mb-2">Authentication Required</h2>
@@ -495,7 +499,7 @@ export const Dashboard = () => {
                                     autoCorrect="off"
                                     spellCheck="false"
                                     data-lpignore="true"
-                                    data-1p-ignore
+                                    data-1p-ignore="true"
                                     className={`${modalInputClass} ${keyError ? 'outline-red-500 focus:outline-red-500' : ''}`} 
                                 />
                                 {keyError && <span className="text-red-500 text-sm mt-2 block">{keyError}</span>}
@@ -523,7 +527,6 @@ export const Dashboard = () => {
                             </form>
                         )}
 
-                        {/* PASSWORD DIALOG STATE */}
                         {phase === 'passworddialog' && (
                             <div className="mt-2">
                                 <h2 className="text-yellow-300 text-2xl md:text-3xl font-semibold mb-6">
@@ -549,7 +552,7 @@ export const Dashboard = () => {
                                             autoCorrect="off"
                                             spellCheck="false"
                                             data-lpignore="true"
-                                            data-1p-ignore
+                                            data-1p-ignore="true"
                                             className={modalInputClass} 
                                         />
                                     </div>
@@ -565,7 +568,7 @@ export const Dashboard = () => {
                                             autoCorrect="off"
                                             spellCheck="false"
                                             data-lpignore="true"
-                                            data-1p-ignore
+                                            data-1p-ignore="true"
                                             className={modalInputClass} 
                                         />
                                     </div>
@@ -589,7 +592,7 @@ export const Dashboard = () => {
                                                 autoCorrect="off"
                                                 spellCheck="false"
                                                 data-lpignore="true"
-                                                data-1p-ignore
+                                                data-1p-ignore="true"
                                                 className={`${modalInputClass} pr-12`} 
                                             />
                                             <button 
@@ -648,7 +651,6 @@ export const Dashboard = () => {
                             </div>
                         )}
 
-                        {/* DELETE CONFIRMATION DIALOG STATE */}
                         {phase === 'deleteConfirm' && (
                             <div className="mt-2">
                                 <h2 className="text-red-500 text-2xl md:text-3xl font-semibold mb-2">Delete Login?</h2>
