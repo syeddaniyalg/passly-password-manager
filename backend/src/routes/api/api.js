@@ -77,24 +77,21 @@ apiRouter.post('/getlist', authorize, async (req, res) => {
 
     if (auth) {
         if (token_type == 'regular') {
-            if (token_type == 'regular') {
-                const user = await Users.findOne({ token: token })
-                const record = await passRecords.findOne({ username: user.username })
-                return res.status(200).json({ success: true, items: record.records })
-            }
-            else {
-                const profile_data = await (await fetch("https://api.github.com/user", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Accept": "application/vnd.github+json",
-                        "X-GitHub-Api-Version": "2022-11-28"
-                    }
-                })).json();
+            const user = await Users.findOne({ token: token })
+            const record = await passRecords.findOne({ username: user.username })
+            return res.status(200).json({ success: true, items: record.records })
+        }
+        else {
+            const profile_data = await (await fetch("https://api.github.com/user", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28"
+                }
+            })).json();
 
-                const record = await passRecords.findOne({ username: profile_data.login })
-                return res.status(200).json({ success: true, items: record.records })
-            }
-
+            const record = await passRecords.findOne({ username: profile_data.login })
+            return res.status(200).json({ success: true, items: record.records })
         }
     }
 })
@@ -254,16 +251,16 @@ apiRouter.post('/update-item', authorize, async (req, res) => {
         // 3. Atomic database update for specific subdocument (requires item._id)
         const updatedRecord = await passRecords.findOneAndUpdate(
             { username: targetUsername, "records._id": item._id },
-            { 
-                $set: { 
+            {
+                $set: {
                     "records.$.title": item.title,
                     "records.$.email": item.email,
                     "records.$.password_hash": encryptedPassword,
                     "records.$.score": item.score || 0,
                     "records.$.data_modified": currentTimestamp
-                } 
+                }
             },
-            { new: true, runValidators: true } 
+            { new: true, runValidators: true }
         );
 
         if (!updatedRecord) {
@@ -305,7 +302,7 @@ apiRouter.post('/deleteItem', authorize, async (req, res) => {
         const updatedRecord = await passRecords.findOneAndUpdate(
             { username: targetUsername },
             { $pull: { records: { _id: item._id } } },
-            { new: true } 
+            { new: true }
         );
 
         if (!updatedRecord) {

@@ -137,11 +137,7 @@ export const Dashboard = () => {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     credentials: 'include', 
-                    body: JSON.stringify({ 
-                        auth: true, 
-                        token_type: localStorage.getItem('token_type') || 'regular', 
-                        token: localStorage.getItem('token') 
-                    }) 
+                    body: JSON.stringify({}) 
                 })
 
                 const { success, items: fetchedItems } = await listRes.json()
@@ -190,14 +186,11 @@ export const Dashboard = () => {
         const item = items[index]
         try {
             const SERVER_URL = import.meta.env.VITE_SERVER_URL
-            const token = localStorage.getItem('token')
-            const token_type = localStorage.getItem('token_type') || 'regular'
-
             const res = await fetch(`${SERVER_URL}/api/decrypt-key`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ password_hash: item.password_hash, key: currentKey, token, token_type })
+                body: JSON.stringify({ password_hash: item.password_hash })
             })
 
             const data = await res.json()
@@ -246,14 +239,11 @@ export const Dashboard = () => {
 
         try {
             const SERVER_URL = import.meta.env.VITE_SERVER_URL
-            const token = localStorage.getItem('token')
-            const token_type = localStorage.getItem('token_type') || 'regular'
-
             const res = await fetch(`${SERVER_URL}/api/validatekey`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ key: vaultKey, token, token_type })
+                body: JSON.stringify({ key: vaultKey })
             })
 
             const data = await res.json()
@@ -292,9 +282,6 @@ export const Dashboard = () => {
 
         try {
             const SERVER_URL = import.meta.env.VITE_SERVER_URL
-            const token = localStorage.getItem('token')
-            const token_type = localStorage.getItem('token_type') || 'regular'
-
             const isEdit = pendingAction?.type === 'edit'
             const endpoint = isEdit ? '/api/update-item' : '/api/additem'
 
@@ -307,8 +294,6 @@ export const Dashboard = () => {
                     score: passwordScore
                 },
                 key: key, 
-                token,
-                token_type
             }
 
             const res = await fetch(`${SERVER_URL}${endpoint}`, {
@@ -343,14 +328,10 @@ export const Dashboard = () => {
         
         try {
             const SERVER_URL = import.meta.env.VITE_SERVER_URL
-            const token = localStorage.getItem('token')
-            const token_type = localStorage.getItem('token_type') || 'regular'
             const itemToDelete = items[pendingAction.index]
 
             const payload = {
-                item: itemToDelete,
-                token,
-                token_type
+                item: itemToDelete
             }
 
             const res = await fetch(`${SERVER_URL}/api/deleteItem`, {
