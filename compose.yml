@@ -1,0 +1,34 @@
+services:
+  backend:
+    build: ./backend
+    image: passly-backend
+
+    ports:
+      - "3000:3000"
+    networks:
+      - passly-net
+    environment:
+      - GITHUB_CLIENT_ID=
+      - GITHUB_CLIENT_SECRET=
+      - PORT=3000
+      - MONGODB_URL=
+      - FRONTEND_URL=http://localhost:5173
+      - JWT_KEY=
+      - NODE_ENV='production'
+
+  frontend:
+    build: ./frontend
+    image: passly-frontend
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_GITHUB_CLIENT_ID=
+      - VITE_SERVER_URL=http://localhost:3000
+    networks:
+      - passly-net
+    depends_on:
+      - backend
+
+networks:
+  passly-net:
+    driver: bridge
