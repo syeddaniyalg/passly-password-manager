@@ -17,8 +17,7 @@ export const SignUp = () => {
 
   const createAccount = async (data) => {
     setCreating(true)
-    const SERVER_URL = import.meta.env.VITE_SERVER_URL
-    const res = await fetch(`${SERVER_URL}/api/signup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...data }) })
+    const res = await fetch(`/api/signup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...data }) })
     const res_data = await res.json()
     const { success, key } = res_data
     if (success) {
@@ -45,8 +44,7 @@ export const SignUp = () => {
       return
     }
 
-    const SERVER_URL = import.meta.env.VITE_SERVER_URL
-    const res = await fetch(`${SERVER_URL}/api/validate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'username': username }) })
+    const res = await fetch(`/api/validate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'username': username }) })
     const res_data = await res.json()
 
     const { validate } = res_data

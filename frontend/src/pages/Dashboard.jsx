@@ -116,9 +116,7 @@ export const Dashboard = () => {
     useEffect(() => {
         (async () => {
             setStatus('loading')
-            const SERVER_URL = import.meta.env.VITE_SERVER_URL
-            
-            const res = await fetch(`${SERVER_URL}/api/getname`, { 
+            const res = await fetch(`/api/getname`, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 credentials: 'include', 
@@ -133,7 +131,7 @@ export const Dashboard = () => {
                 setFullName(name)
                 setStatus('loaded')
 
-                const listRes = await fetch(`${SERVER_URL}/api/getlist`, { 
+                const listRes = await fetch(`/api/getlist`, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     credentials: 'include', 
@@ -185,8 +183,7 @@ export const Dashboard = () => {
 
         const item = items[index]
         try {
-            const SERVER_URL = import.meta.env.VITE_SERVER_URL
-            const res = await fetch(`${SERVER_URL}/api/decrypt-key`, {
+            const res = await fetch(`/api/decrypt-key`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -238,8 +235,7 @@ export const Dashboard = () => {
         }
 
         try {
-            const SERVER_URL = import.meta.env.VITE_SERVER_URL
-            const res = await fetch(`${SERVER_URL}/api/validatekey`, {
+            const res = await fetch(`/api/validatekey`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -287,7 +283,6 @@ export const Dashboard = () => {
         setIsSaving(true)
 
         try {
-            const SERVER_URL = import.meta.env.VITE_SERVER_URL
             const isEdit = pendingAction?.type === 'edit'
             const endpoint = isEdit ? '/api/update-item' : '/api/additem'
 
@@ -302,7 +297,7 @@ export const Dashboard = () => {
                 key: key
             }
 
-            const res = await fetch(`${SERVER_URL}${endpoint}`, {
+            const res = await fetch(`${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -333,14 +328,13 @@ export const Dashboard = () => {
         setFormError('')
         
         try {
-            const SERVER_URL = import.meta.env.VITE_SERVER_URL
             const itemToDelete = items[pendingAction.index]
 
             const payload = {
                 item: itemToDelete
             }
 
-            const res = await fetch(`${SERVER_URL}/api/deleteItem`, {
+            const res = await fetch(`/api/deleteItem`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

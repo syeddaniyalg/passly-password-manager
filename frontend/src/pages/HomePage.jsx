@@ -14,8 +14,7 @@ export const HomePage = () => {
   useEffect(() => {
     (async () => {
       setStatus('loading')
-      const SERVER_URL = import.meta.env.VITE_SERVER_URL
-      const res = await fetch(`${SERVER_URL}/api/verify_auth`, { method: 'POST', headers: { 'Content-Type': 'application/json' },credentials: 'include', body: JSON.stringify({check:true})})
+      const res = await fetch(`/api/verify_auth`, { method: 'POST', headers: { 'Content-Type': 'application/json' },credentials: 'include', body: JSON.stringify({check:true})})
       const res_data = await res.json()
       const {auth} = res_data
       console.log(auth)

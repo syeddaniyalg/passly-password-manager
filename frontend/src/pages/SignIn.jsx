@@ -20,8 +20,7 @@ export const SignIn = () => {
     const handleLogin = async (data) => {
         setAuthState(true)
 
-        const SERVER_URL = import.meta.env.VITE_SERVER_URL
-        const res = await fetch(`${SERVER_URL}/api/auth/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ method: 'regular', ...data }) })
+        const res = await fetch(`/api/auth/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ method: 'regular', ...data }) })
 
         const res_data = await res.json()
         if (res_data['success'] == true) {
