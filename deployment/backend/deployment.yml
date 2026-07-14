@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passly-backend-deployment
+  namespace: passly
+  labels:
+    app: passly-backend
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: passly-backend
+  template:
+    metadata:
+      labels:
+        app: passly-backend
+    spec:
+      containers:
+      - name: passly-backend
+        image: meindaniyalhoon/passly-backend:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 3000
+        envFrom:
+          - configMapRef:
+              name: passly-backend-configmap
+          - secretRef:
+              name: passly-backend-secret
+
+          

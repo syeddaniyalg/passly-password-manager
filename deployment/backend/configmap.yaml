@@ -1,0 +1,10 @@
+# rename configmap.yaml to configmap.yml and fill the variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: passly-backend-configmap
+  namespace: passly
+data:
+  PORT: ""
+  FRONTEND_URL: ""
+  NODE_ENV: 'production'

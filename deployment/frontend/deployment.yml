@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passly-frontend-deployment
+  namespace: passly
+  labels:
+    app: passly-frontend
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: passly-frontend
+  template:
+    metadata:
+      labels:
+        app: passly-frontend
+    spec:
+      containers:
+      - name: passly-frontend
+        image: meindaniyalhoon/passly-frontend:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 80
+        
+          
