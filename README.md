@@ -89,7 +89,7 @@ Create a `.env` file in `backend/` with the following variables:
 PORT=5000
 MONGODB_URL=your_mongodb_connection_string
 JWT_KEY=a_long_random_string
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=frontend_hostname_or_url
 GITHUB_CLIENT_ID=your_github_oauth_client_id
 GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
 NODE_ENV=development
