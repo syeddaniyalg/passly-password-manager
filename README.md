@@ -89,7 +89,6 @@ Create a `.env` file in `backend/` with the following variables:
 PORT=5000
 MONGODB_URL=your_mongodb_connection_string
 JWT_KEY=a_long_random_string
-FRONTEND_URL=frontend_hostname_or_url
 GITHUB_CLIENT_ID=your_github_oauth_client_id
 GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
 NODE_ENV=development
@@ -120,20 +119,16 @@ Run the frontend:
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`, with the backend running at `http://localhost:5000`.
-
 ### GitHub OAuth App configuration
 
 When creating the OAuth App on GitHub, set:
 
-- Homepage URL: `http://localhost:5173`
-- Authorization callback URL: `http://localhost:5173/login/callback`
-
-Update these to the deployed frontend URL if hosting the app elsewhere.
+- Homepage URL: `hostname configured in ingress`
+- Authorization callback URL: `http://hostname/login/callback`
 
 ## Deployment
 
-Passly can also be run as containerized services, either locally with Docker Compose or orchestrated with Kubernetes.
+The repo is configured to run as containerized services, locally with Docker Compose and orchestrated with Kubernetes.
 
 ### Docker Compose
 
@@ -154,7 +149,7 @@ Manifests are provided under `deployment/`, targeting a dedicated `passly` names
 - `passly-namespace.yml` — creates the namespace
 - `backend/` — Deployment, Service, ConfigMap, and Secret for the backend (5 replicas)
 - `frontend/` — Deployment and Service for the frontend (5 replicas)
-- `ingress.yml` — routes `/` to the frontend service and `/api` to the backend service through an NGINX Ingress Controller
+- `ingress.yml` — routes both services under a single hostname (`passly.local`): `/` goes to the frontend service, and `/api` goes to the backend service
 
 Before applying, rename `configmap.yaml` and `secret.yaml` under `deployment/backend/` to `.yml` and fill in the required values. Add the mapping in `deployment/host_mapping.txt` to your system's hosts file to resolve `passly.local` locally.
 
@@ -167,6 +162,8 @@ kubectl apply -f deployment/backend/
 ```
 
 Alternatively, `deploy.cmd` (Windows) applies all manifests in this order.
+
+Once applied, the app is reachable at `http://passly.local/`, with the backend served from the same hostname under `http://passly.local/api/`.
 
 This requires a Kubernetes cluster with an NGINX Ingress Controller (for example, via Minikube, kind, or Docker Desktop) and the backend and frontend images built and pushed to a registry the cluster can pull from.
 
@@ -189,10 +186,6 @@ All credential and account endpoints are prefixed with `/api`.
 | POST | `/api/decrypt-key` | Decrypts a stored credential using the submitted secret key |
 
 All routes other than `/api/auth`, `/api/signup`, and `/api/validate` require a valid session cookie.
-
-## Status
-
-This project is not currently deployed to a public environment. It is intended as a learning project covering authentication (including OAuth), REST API design, MongoDB schema modeling, applied encryption, containerization, and Kubernetes-based orchestration, and is run locally or in a local cluster as described above.
 
 ## License
 
