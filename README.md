@@ -26,6 +26,11 @@ Passly follows a zero-knowledge-adjacent model for stored credentials:
 - Zustand for state management
 - Tailwind CSS, Headless UI, Framer Motion
 
+**Infrastructure**
+- Docker, with multi-stage builds for both services (the frontend build output is served as static assets through Nginx)
+- Docker Compose for local multi-container orchestration
+- Kubernetes (Deployments, Services, Ingress, ConfigMaps, and Secrets) for containerized deployment behind an NGINX Ingress Controller
+
 ## Features
 
 - Email and password authentication
@@ -40,6 +45,7 @@ Passly follows a zero-knowledge-adjacent model for stored credentials:
 ```
 passly-password-manager/
 ├── backend/
+│   ├── Dockerfile
 │   ├── index.js
 │   └── src/
 │       ├── middleware/auth/     # JWT cookie verification
@@ -47,11 +53,19 @@ passly-password-manager/
 │       │   ├── api/             # Credential CRUD endpoints
 │       │   └── api/auth/        # Login, signup, GitHub OAuth exchange
 │       └── schemas/             # Mongoose models for users and password records
-└── frontend/
-    └── src/
-        ├── components/
-        ├── pages/                # HomePage, SignIn, SignUp, Callback, Dashboard
-        └── App.jsx
+├── frontend/
+│   ├── Dockerfile
+│   ├── ngnix.conf
+│   └── src/
+│       ├── components/
+│       ├── pages/                # HomePage, SignIn, SignUp, Callback, Dashboard
+│       └── App.jsx
+├── deployment/
+│   ├── passly-namespace.yml
+│   ├── ingress.yml
+│   ├── backend/                  # Deployment, Service, ConfigMap, Secret
+│   └── frontend/                 # Deployment, Service
+└── compose.yml
 ```
 
 ## Getting started
@@ -97,7 +111,6 @@ npm install
 Create a `.env` file in `frontend/` with the following variables:
 
 ```
-VITE_SERVER_URL=http://localhost:5000
 VITE_GITHUB_CLIENT_ID=your_github_oauth_client_id
 ```
 
@@ -117,6 +130,45 @@ When creating the OAuth App on GitHub, set:
 - Authorization callback URL: `http://localhost:5173/login/callback`
 
 Update these to the deployed frontend URL if hosting the app elsewhere.
+
+## Deployment
+
+Passly can also be run as containerized services, either locally with Docker Compose or orchestrated with Kubernetes.
+
+### Docker Compose
+
+The backend builds from a Node 22 Alpine image, and the frontend is built in a Node stage and served as static assets through Nginx in a second stage.
+
+Fill in the environment values in `compose.yml` (GitHub OAuth credentials, MongoDB connection string, JWT key), then run:
+
+```
+docker compose up --build
+```
+
+The frontend is served at `http://localhost:5173`, and the backend at `http://localhost:3000`.
+
+### Kubernetes
+
+Manifests are provided under `deployment/`, targeting a dedicated `passly` namespace:
+
+- `passly-namespace.yml` — creates the namespace
+- `backend/` — Deployment, Service, ConfigMap, and Secret for the backend (5 replicas)
+- `frontend/` — Deployment and Service for the frontend (5 replicas)
+- `ingress.yml` — routes `/` to the frontend service and `/api` to the backend service through an NGINX Ingress Controller
+
+Before applying, rename `configmap.yaml` and `secret.yaml` under `deployment/backend/` to `.yml` and fill in the required values. Add the mapping in `deployment/host_mapping.txt` to your system's hosts file to resolve `passly.local` locally.
+
+Apply the manifests with:
+
+```
+kubectl apply -f deployment/
+kubectl apply -f deployment/frontend/
+kubectl apply -f deployment/backend/
+```
+
+Alternatively, `deploy.cmd` (Windows) applies all manifests in this order.
+
+This requires a Kubernetes cluster with an NGINX Ingress Controller (for example, via Minikube, kind, or Docker Desktop) and the backend and frontend images built and pushed to a registry the cluster can pull from.
 
 ## API overview
 
@@ -140,7 +192,7 @@ All routes other than `/api/auth`, `/api/signup`, and `/api/validate` require a 
 
 ## Status
 
-This project is not currently deployed. It is intended as a learning project covering authentication (including OAuth), REST API design, MongoDB schema modeling, and applied encryption, and is run locally as described above.
+This project is not currently deployed to a public environment. It is intended as a learning project covering authentication (including OAuth), REST API design, MongoDB schema modeling, applied encryption, containerization, and Kubernetes-based orchestration, and is run locally or in a local cluster as described above.
 
 ## License
 
